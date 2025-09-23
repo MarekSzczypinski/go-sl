@@ -22,12 +22,50 @@ func tick() tea.Cmd {
 	})
 }
 
+const (
+	bigEngineBase = `"      ====        ________                ___________     "
+"  _D _|  |_______/        \\__I_I_____===__|_________|    "
+"   |(_)---  |   H\\________/ |   |        =|___ ___|      "
+"   /     |  |   H  |  |     |   |         ||_| |_||       "
+"  |      |  |   H  |__--------------------| [___] |       "
+"  | ________|___H__/__|_____/[][]~\\______|       |       "
+"  |/ |   |-----------I_____I [][] []  D   |=======|__     "`
+
+	bigEngineWheels1 = `"__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ "
+" |/-=|___|=    ||    ||    ||    |_____/~\\___/           "
+"  \\_/      \\O=====O=====O=====O_/   \\__/               "`
+
+	bigEngineWheels2 = `"__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ "
+" |/-=|___|=O=====O=====O=====O   |_____/~\\___/           "
+"  \\_/      \\__/  \\__/  \\__/       \\__/               "`
+
+	bigEngineWheels3 = `"__/ =| o |=-O=====O=====O=====O /~~\\ ____Y___________|__ "
+" |/-=|___|=    ||    ||    ||    |_____/~\\___/           "
+"  \\_/      \\__/  \\__/  \\__/       \\__/               "`
+
+	bigEngineWheels4 = `"__/ =| o |=-~O=====O=====O=====O/~~\\ ____Y___________|__ "
+" |/-=|___|=    ||    ||    ||    |_____/~\\___/           "
+"  \\_/      \\__/  \\__/  \\__/       \\__/               "`
+
+	bigEngineWheels5 = `"__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ "
+" |/-=|___|=   O=====O=====O=====O|_____/~\\___/           "
+"  \\_/      \\__/  \\__/  \\__/       \\__/               "`
+
+	bigEngineWheels6 = `"__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ "
+" |/-=|___|=    ||    ||    ||    |_____/~\\___/           "
+"  \\_/      \\_O=====O=====O=====O/   \\__/               "`
+)
+
+var (
+	bigEngineWheels = []string{bigEngineWheels1, bigEngineWheels6, bigEngineWheels5, bigEngineWheels4, bigEngineWheels3, bigEngineWheels2}
+)
+
 type model struct {
 	screenWidth  int
 	screenHeight int
 	artXPos      int
 	artWidth     int
-	asciiArt     string
+	engineWheels int
 }
 
 func initModel() model {
@@ -35,12 +73,8 @@ func initModel() model {
 		screenWidth:  0,
 		screenHeight: 0,
 		artXPos:      0,
-		artWidth:     52,
-		asciiArt: ` _   _      _ _        __        __         _     _
-| | | | ___| | | ___   \ \      / /__  _ __| | __| |
-| |_| |/ _ \ | |/ _ \   \ \ /\ / / _ \| '__| |/ _\ |
-|  _  |  __/ | | (_) |   \ V  V / (_) | |  | | (_| |
-|_| |_|\___|_|_|\___/     \_/\_/ \___/|_|  |_|\__,_|`,
+		artWidth:     61,
+		engineWheels: 0,
 	}
 }
 
@@ -63,6 +97,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.artXPos < -m.artWidth {
 			return m, tea.Quit
 		}
+		m.engineWheels++
+		if m.engineWheels > 5 {
+			m.engineWheels = 0
+		}
 		return m, tick()
 	}
 
@@ -70,10 +108,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	lines := strings.Split(m.asciiArt, "\n")
+	baseLines := strings.Split(bigEngineBase, "\n")
+	wheelsLines := strings.Split(bigEngineWheels[m.engineWheels], "\n")
 	var sb strings.Builder
 
-	for _, line := range lines {
+	for _, line := range baseLines {
+		spaces := ""
+		if m.artXPos >= 0 {
+			spaces = strings.Repeat(" ", m.artXPos)
+			sb.WriteString(spaces + line + "\n")
+		} else if m.artXPos < 0 && m.artXPos > -m.artWidth {
+			sb.WriteString(line[m.artXPos*(-1):] + "\n")
+		}
+	}
+
+	for _, line := range wheelsLines {
 		spaces := ""
 		if m.artXPos >= 0 {
 			spaces = strings.Repeat(" ", m.artXPos)
