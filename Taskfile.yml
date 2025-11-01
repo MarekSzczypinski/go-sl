@@ -1,0 +1,79 @@
+version: "3"
+
+vars:
+  BINARY_NAME: sl
+  BUILD_DIR: bin
+  GO_FILES: "./..."
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  tidy:
+    desc: Clean and manage dependencies
+    sources:
+      - go.mod
+      - go.sum
+    cmds:
+      - go mod tidy
+
+  fmt:
+    desc: Format code
+    sources:
+      - "**/*.go"
+    cmds:
+      - go fmt {{.GO_FILES}}
+
+  vet:
+    desc: Analyze code for potential errors
+    sources:
+      - "**/*.go"
+    cmds:
+      - go vet {{.GO_FILES}}
+
+  build:
+    desc: Build binary
+    deps: [tidy, fmt, vet, lint]
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - "{{.BUILD_DIR}}/{{.BINARY_NAME}}"
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}
+      - go build -v -o {{.BUILD_DIR}}/{{.BINARY_NAME}} .
+
+  run:
+    desc: Run the application (after building it)
+    deps: [build]
+    cmds:
+      - ./{{.BUILD_DIR}}/{{.BINARY_NAME}}
+
+  clean:
+    desc: Remove binaries and clean the cache
+    cmds:
+      - rm -rf {{.BUILD_DIR}}
+      - go clean
+
+  vulncheck:
+    desc: Scan the project for known vulnerabilities
+    cmds:
+      - govulncheck {{.GO_FILES}}
+
+  staticcheck:
+    desc: Run static analysis
+    cmds:
+      - staticcheck {{.GO_FILES}}
+
+  lint:
+    desc: Run govulncheck and staticcheck
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    cmds:
+      - task vulncheck
+      - task staticcheck
