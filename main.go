@@ -112,30 +112,26 @@ func (m model) View() string {
 	wheelsLines := strings.Split(bigEngineWheels[m.engineWheels], "\n")
 	var sb strings.Builder
 
-	for _, line := range baseLines {
-		spaces := ""
-		if m.artXPos >= 0 {
-			spaces = strings.Repeat(" ", m.artXPos)
-			sb.WriteString(spaces + line + "\n")
-		} else if m.artXPos < 0 && m.artXPos > -m.artWidth {
-			sb.WriteString(line[m.artXPos*(-1):] + "\n")
-		}
-	}
-
-	for _, line := range wheelsLines {
-		spaces := ""
-		if m.artXPos >= 0 {
-			spaces = strings.Repeat(" ", m.artXPos)
-			sb.WriteString(spaces + line + "\n")
-		} else if m.artXPos < 0 && m.artXPos > -m.artWidth {
-			sb.WriteString(line[m.artXPos*(-1):] + "\n")
-		}
-	}
+	sb = m.prepareStringToRender(sb, baseLines)
+	sb = m.prepareStringToRender(sb, wheelsLines)
 
 	// lipgloss style for centering
 	style := lipgloss.NewStyle().Height(m.screenHeight)
 	centeredContent := style.AlignVertical(lipgloss.Center).Render(sb.String())
 	return centeredContent
+}
+
+func (m model) prepareStringToRender(sb strings.Builder, inputLines []string) strings.Builder {
+	for _, line := range inputLines {
+		spaces := ""
+		if m.artXPos >= 0 {
+			spaces = strings.Repeat(" ", m.artXPos)
+			sb.WriteString(spaces + line + "\n")
+		} else if m.artXPos < 0 && m.artXPos > -m.artWidth {
+			sb.WriteString(line[m.artXPos*(-1):] + "\n")
+		}
+	}
+	return sb
 }
 
 func main() {
